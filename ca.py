@@ -6,7 +6,7 @@ import numpy as np
 def update_grid(grid, on=255, off=0):
     # copy grid since we require 8 neighbors
     # for calculation and we go line by line
-    new_grid = grid.copy()
+    new_grid = np.zeros_like(grid)
     nrows = grid.shape[0]
     ncols = grid.shape[1]
     for i in range(nrows):
@@ -25,15 +25,24 @@ def update_grid(grid, on=255, off=0):
                 + int(grid[(i+1) % nrows, j])
                 + int(grid[(i+1) % nrows, (j+1) % ncols])
             ) // 255
-            # Apply Conway's rules
+            # Apply Conway's Game of Life rules
             if grid[i, j]  == on:
-                if (n_neighbors < 2) or (n_neighbors > 3):
+                # 1. Any live cell with fewer than two live neighbours dies,
+                #    as if by underpopulation
+                if n_neighbors < 2:
+                    new_grid[i, j] = off
+                # 2. Any live cell with two or three live neighbours lives on
+                if (n_neighbors == 2) or (n_neighbors == 3):
+                    new_grid[i, j] = on
+                # 3. Any live cell with more than three live neighbours dies,
+                #    as if by overpopulation
+                if n_neighbors > 3:
                     new_grid[i, j] = off
             else:
-                if n_neighbors == 2:
+                # 4. Any dead cell with exactly three live neighbours becomes
+                #    a live cell, as if by reproduction
+                if n_neighbors == 3:
                     new_grid[i, j] = on
-                elif n_neighbors == 3:
-                    new_grid[i, j] = grid[i, j]
     return new_grid
 
 def plot_images(
